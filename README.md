@@ -39,3 +39,15 @@ pip freeze
 # 從 requirements.txt 安裝套件
 pip install -r requirements.txt
 ```
+
+### 執行 BEHAVE
+
+```bash
+behave --no-capture --format allure_behave.formatter:AllureFormatter --outfile=allure-results
+```
+
+### 在瀏覽器上取得測試結果
+
+```bash
+allure serve allure-results
+```
