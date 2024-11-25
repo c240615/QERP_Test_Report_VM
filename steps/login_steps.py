@@ -11,9 +11,12 @@ setTimeOut = 10 # 定義超時時間
 
 @given('the user is on the login page')
 def step1(context):
-    context.webdriver_utils = WebDriverUtils(context.driver)
-    context.driver.get("http://192.168.1.247/QSERP/")
-    context.driver.maximize_window()
+    try:
+        context.webdriver_utils = WebDriverUtils(context.driver)
+        context.driver.get("http://192.168.1.247/QSERP/")        
+        context.driver.maximize_window()
+    except Exception as e:
+        logging.error(f"Error occurred: {e}")
 
 # 登入成功測試區
 @when('the user enters Username as "{username}" and Password as "{password}"')
@@ -21,6 +24,7 @@ def step2(context, username, password):
     context.webdriver_utils.set_value(By.NAME, "uid", username)
     context.webdriver_utils.set_value(By.NAME, "pwd", password)
     context.driver.find_element(By.TAG_NAME, "form").submit()
+    context.webdriver_utils.get_page_load_time()
 
 @then('the user should be logged in successfully')
 def step3_1(context):
@@ -36,8 +40,7 @@ def step3_1(context):
         if ifHomePage:
             context.webdriver_utils.click_element(By.XPATH, "//div[@id='path']/span[2]/div")
             context.webdriver_utils.click_element(By.ID, "logout")
-            print('登出')
-        
+            print('登出')        
         
     except Exception as e:
         # 如果登入失敗，檢查 URL 是否包含登入頁面的 URL
@@ -45,7 +48,7 @@ def step3_1(context):
             # http://192.168.1.247/servlet/jform 紅色
             # http://210.61.91.56:8001/servlet/jform?file=QSERP.dat 重新登入
             page = context.webdriver_utils.wait_for_url_contains('http://210.61.91.56:8001/servlet/jform?file=QSERP.dat') 
-            assert not page, f"Login failed. Open 重新登入頁 - http://210.61.91.56:8001/servlet/jform?file=QSERP.dat : {e}"
+            assert not page, f"Login failed. Open 重新登入頁 - http://210.61.91.56:8001/servlet/jform?file=QSERP.dat"
         except Exception as inner_exception:            
             logging.error(f"Error occurred: {inner_exception}")
             raise AssertionError(f"Login failed. Unable to verify page: {inner_exception}")
@@ -63,7 +66,6 @@ def step3_2(context):
     except Exception as e:
         try:
             ifHomePage = context.webdriver_utils.wait_for_url_contains("http://192.168.1.247/servlet/jform#")
-            assert not ifHomePage, f"Test failed. Wrong user but login successfully: {e}"
-        except Exception as inner_exception:
-            logging.error(f"Error occurred: {inner_exception}")
-            raise AssertionError(f"Failed to redirect to login page or incorrect behavior detected: {inner_exception}")
+            assert not ifHomePage, f"Test failed. Wrong user but login successfully"
+        except Exception as inner_exception:            
+            raise AssertionError(f"Failed to redirect to login page : {inner_exception}")
